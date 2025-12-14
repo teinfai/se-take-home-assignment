@@ -3,7 +3,7 @@ name: backend-verify-result
 on:
   pull_request:
     types: [ opened, synchronize, reopened, edited ]
-    branches: [ main ]
+    branches: [ test/nodejs ]
 
 jobs:
   verify-result:
