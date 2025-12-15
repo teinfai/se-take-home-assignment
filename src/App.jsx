@@ -100,16 +100,36 @@ export default function App() {
         }
 
         setOrders((prev) =>
-          prev.map((item) =>
-            item.id === lastBot.currentOrderId
-              ? { ...item, status: "Pending" }
-              : item
+          reorderQueueAfterBotRemoved(
+            prev.map((item) =>
+              item.id === lastBot.currentOrderId
+                ? { ...item, status: "Pending" }
+                : item
+            )
           )
         );
       }
 
       return prevBots.slice(0, -1);
     });
+  }
+
+  function reorderQueueAfterBotRemoved(allOrders) {
+    const notPending = [];
+    const pendingVip = [];
+    const pendingNormal = [];
+
+    for (const order of allOrders) {
+      if (order.status !== "Pending") {
+        notPending.push(order);
+        continue;
+      }
+
+      if (order.type === "VIP") pendingVip.push(order);
+      else pendingNormal.push(order);
+    }
+
+    return [...notPending, ...pendingVip, ...pendingNormal];
   }
 
   function addOrder(type) {
