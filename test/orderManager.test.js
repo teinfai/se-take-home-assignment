@@ -62,6 +62,28 @@ test("removing a busy bot re-queues its order for another bot", async () => {
   assert.equal(bots[0].status, BOT_STATUS.IDLE);
 });
 
+test("re-queued orders keep processing first and VIP pending ahead of normal pending", () => {
+  const manager = createManager();
+  manager.addBot();
+
+  const normal1 = manager.addOrder("NORMAL"); // will be PROCESSING
+  manager.addOrder("NORMAL"); // pending
+  manager.addOrder("VIP"); // pending VIP inserted ahead of normal pending
+
+  // remove the busy bot (working on normal1), so it becomes PENDING again
+  manager.removeBot();
+
+  const pending = manager.getState().pending;
+  assert.deepEqual(
+    pending.map((order) => [order.id, order.type, order.status]),
+    [
+      [3, "VIP", STATUS.PENDING],
+      [2, "NORMAL", STATUS.PENDING],
+      [normal1.id, "NORMAL", STATUS.PENDING],
+    ]
+  );
+});
+
 test("order ids are unique and increasing", () => {
   const manager = createManager();
   const a = manager.addOrder("NORMAL");

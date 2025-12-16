@@ -50,7 +50,9 @@ export default class OrderManager extends EventEmitter {
           ...removedOrder,
           status: STATUS.PENDING,
         };
-        this.orders = this._insertOrder(this.orders, requeuedOrder);
+        this.orders = this._reorderQueue(
+          this._insertOrder(this.orders, requeuedOrder)
+        );
         this.emit("orderRequeued", requeuedOrder);
       }
     }
@@ -198,6 +200,24 @@ export default class OrderManager extends EventEmitter {
       order,
       ...queue.slice(firstNormalIndex),
     ];
+  }
+
+  _reorderQueue(queue) {
+    const notPending = [];
+    const pendingVip = [];
+    const pendingNormal = [];
+
+    for (const order of queue) {
+      if (order.status !== STATUS.PENDING) {
+        notPending.push(order);
+        continue;
+      }
+
+      if (order.type === "VIP") pendingVip.push(order);
+      else pendingNormal.push(order);
+    }
+
+    return [...notPending, ...pendingVip, ...pendingNormal];
   }
 
   _detachOrder(orderId) {
