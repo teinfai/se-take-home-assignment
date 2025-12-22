@@ -116,8 +116,7 @@ export default function App() {
 
   function reorderQueueAfterBotRemoved(allOrders) {
     const notPending = [];
-    const pendingVip = [];
-    const pendingNormal = [];
+    let pendingQueue = [];
 
     for (const order of allOrders) {
       if (order.status !== "Pending") {
@@ -125,11 +124,10 @@ export default function App() {
         continue;
       }
 
-      if (order.type === "VIP") pendingVip.push(order);
-      else pendingNormal.push(order);
+      pendingQueue = insertOrder(pendingQueue, order);
     }
 
-    return [...notPending, ...pendingVip, ...pendingNormal];
+    return [...notPending, ...pendingQueue];
   }
 
   function addOrder(type) {
